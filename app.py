@@ -8,7 +8,7 @@ ENV = 'dev'
 
 if ENV == 'dev':
     app.debug = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = ''
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:BD820PM!@localhost/o_bar_review'
 else:
     app.debug = False
     app.config['SQLALCHEMY_DATABASE_URI'] = ''
@@ -22,13 +22,13 @@ class Feedback(db.Model):
     __tablename__ = 'feedback'
     id = db.Column(db.Integer, primary_key=True)
     customer = db.Column(db.String(200), unique=True)
-    server = db.Column(db.String(200))
+    waiter = db.Column(db.String(200))
     rating = db.Column(db.Integer)
     comments = db.Column(db.Text())
 
-    def __init__(self, customer, server, rating, comments):
+    def __init__(self, customer, waiter, rating, comments):
         self.customer = customer
-        self.server = server
+        self.waiter = waiter
         self.rating = rating
         self.comments = comments
 
@@ -42,17 +42,17 @@ def index():
 def submit():
     if request.method == 'POST':
         customer = request.form['customer']
-        server = request.form['server']
+        waiter = request.form['waiter']
         rating = request.form['rating']
         comments = request.form['comments']
-        # print(customer, server, rating, comments)
-        if customer == '' or server == '':
+        # print(customer, waiter, rating, comments)
+        if customer == '' or waiter == '':
             return render_template('index.html', message='Please enter required fields')
         if db.session.query(Feedback).filter(Feedback.customer == customer).count() == 0:
-            data = Feedback(customer, server, rating, comments)
+            data = Feedback(customer, waiter, rating, comments)
             db.session.add(data)
             db.session.commit()
-            send_mail(customer, server, rating, comments)
+            send_mail(customer, waiter, rating, comments)
             return render_template('success.html')
         return render_template('index.html', message='You have already submitted feedback')
 
